@@ -19,7 +19,7 @@ interval = 0.5  # 1초 간격
 # 각도 데이터를 저장할 리스트
 angles_list = []
 
-test_data = 8
+test_data = 0
 test_case = {
     0 : "0",
     1 : "1",
@@ -87,4 +87,5 @@ cv.destroyAllWindows()
 df = pd.DataFrame(angles_list)
 
 # csv 파일로 저장
-df.to_csv(f'data/hand_angles_{test_data}.csv', index=False)
+# df.to_csv(f'data/hand_angles_{test_data}.csv', index=False)
+df.to_csv(f'data/test_data_{test_data}.csv', index=False)

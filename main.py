@@ -82,9 +82,6 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
             if idx in gesture.keys(): # 만약 인덱스가 가위바위보 중에 있다면 가위바위보 글씨 표시
                 cv2.putText(img, text=gesture[idx].upper(), org=(int(res.landmark[0].x * img.shape[1]), int(res.landmark[0].y * img.shape[0] + 20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255), thickness=2)
 
-            # Other gestures 모든 제스처를 표시한다면 
-            # cv2.putText(img, text=gesture[idx].upper(), org=(int(res.landmark[0].x * img.shape[1]), int(res.landmark[0].y * img.shape[0] + 20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255), thickness=2)
-
             mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS) # 손에 랜드마크를 그려줌 
 
     cv2.imshow('Game', img)
