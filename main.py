@@ -26,7 +26,7 @@ hands = mp_hands.Hands(
     min_tracking_confidence=0.5)  
 
 # 제스처 인식 모델 
-file = np.genfromtxt('data/merged_hand_angles.csv', delimiter=',') # **각 제스처들의 라벨과 각도가 저장되어 있음, 정확도를 높이고 싶으면 데이터를 추가해보자!** 
+file = np.genfromtxt('hand_data/merged_hand_angles.csv', delimiter=',') # **각 제스처들의 라벨과 각도가 저장되어 있음, 정확도를 높이고 싶으면 데이터를 추가해보자!** 
 angle = file[:,:-1].astype(np.float32) # 각도
 label = file[:, -1].astype(np.float32) # 라벨
 knn = cv2.ml.KNearest_create() # knn(k-최근접 알고리즘)으로   

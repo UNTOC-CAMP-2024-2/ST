@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # 라벨과 각도를 불러옴
-file = np.genfromtxt('data/merged_hand_angles.csv', delimiter=',')
+file = np.genfromtxt('hand_data/merged_hand_angles.csv', delimiter=',')
 angle = file[:, :-1].astype(np.float32)  # 각도 데이터
 label = file[:, -1].astype(np.float32)   # 라벨 데이터
     
@@ -15,7 +15,7 @@ knn = cv2.ml.KNearest_create()
 knn.train(angle, cv2.ml.ROW_SAMPLE, label)
 
 # 테스트 데이터 불러오기 (새로운 데이터로 테스트)
-test_file = np.genfromtxt('data/merged_test_data.csv', delimiter=',')
+test_file = np.genfromtxt('test_data/merged_test_data.csv', delimiter=',')
 test_angle = test_file[:, :-1].astype(np.float32)
 test_label = test_file[:, -1].astype(np.float32)
 

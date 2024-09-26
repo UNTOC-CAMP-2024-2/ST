@@ -87,5 +87,4 @@ cv.destroyAllWindows()
 df = pd.DataFrame(angles_list)
 
 # csv 파일로 저장
-# df.to_csv(f'data/hand_angles_{test_data}.csv', index=False)
-df.to_csv(f'data/test_data_{test_data}.csv', index=False)
+df.to_csv(f'test_data/test_data_{test_data}.csv', index=False)
