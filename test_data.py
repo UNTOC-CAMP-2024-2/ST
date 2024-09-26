@@ -8,7 +8,8 @@ import seaborn as sns
 file = np.genfromtxt('data/merged_hand_angles.csv', delimiter=',')
 angle = file[:, :-1].astype(np.float32)  # 각도 데이터
 label = file[:, -1].astype(np.float32)   # 라벨 데이터
-
+    
+    
 # KNN 모델 생성 및 학습 
 knn = cv2.ml.KNearest_create()
 knn.train(angle, cv2.ml.ROW_SAMPLE, label)
