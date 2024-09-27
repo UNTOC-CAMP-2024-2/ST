@@ -54,10 +54,9 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
                 joint[j] = [lm.x, lm.y, lm.z] # 각 joint마다 x,y,z 좌표 저장
 
             # Compute angles between joints joint마다 각도 계산 
-            # **공식문서 들어가보면 각 joint 번호의 인덱스가 나옴**
             v1 = joint[[0,1,2,3,0,5,6,7,0,9,10,11,0,13,14,15,0,17,18,19],:] # Parent joint
             v2 = joint[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],:] # Child joint
-            v = v2 - v1 # [20,3]관절벡터 
+            v = v2 - v1 # [21,3]관절벡터 
             # Normalize v
             v = v / np.linalg.norm(v, axis=1)[:, np.newaxis] # 벡터 정규화(크기 1 벡터) = v / 벡터의 크기
 
@@ -87,3 +86,4 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
     cv2.imshow('Game', img)
     if cv2.waitKey(1) == ord('q'):
         break
+

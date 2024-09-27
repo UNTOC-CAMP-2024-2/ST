@@ -19,7 +19,7 @@ interval = 0.5  # 1초 간격
 # 각도 데이터를 저장할 리스트
 angles_list = []
 
-test_data = 0
+test_data = 6 # 라벨
 test_case = {
     0 : "0",
     1 : "1",
