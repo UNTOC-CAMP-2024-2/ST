@@ -1,4 +1,4 @@
-import cv2 as cv
+import cv2
 import mediapipe as mp
 import numpy as np
 import time
@@ -10,7 +10,7 @@ hands = mp_hands.Hands(max_num_hands=1)
 mp_drawing = mp.solutions.drawing_utils
 
 # 동영상 파일 불러오기
-cap = cv.VideoCapture(0)  # 웹캠 사용
+cap = cv2.VideoCapture(0)  # 웹캠 사용
 
 # 시간 간격 조정을 위한 변수
 prev_time = 0
@@ -19,7 +19,7 @@ interval = 0.5  # 1초 간격
 # 각도 데이터를 저장할 리스트
 angles_list = []
 
-test_data = 6 # 라벨
+test_data = 5 # 라벨
 test_case = {
     0 : "0",
     1 : "1",
@@ -40,7 +40,7 @@ while cap.isOpened():
     current_time = time.time()
 
     # BGR을 RGB로 변환 (MediaPipe는 RGB 이미지를 기대함)
-    rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     # MediaPipe로 손 검출
     result = hands.process(rgb_frame)
@@ -68,23 +68,23 @@ while cap.isOpened():
             # radian 각도를 degree각도로 변경하기
             angle = np.degrees(angle)
 
-            # 1초마다 각도 출력 및 저장
+            # 0.5초마다 각도 출력 및 저장
             if current_time - prev_time >= interval:
                 print(f"angle: {angle}")
                 extended_angle = np.append(angle, test_data)
                 angles_list.append(extended_angle)  # 수정된 각도를 리스트에 저장
                 prev_time = current_time
 
-    cv.imshow('Hand Tracking', frame)
-    if cv.waitKey(1) & 0xFF == ord('q'):
+    cv2.imshow('Hand Tracking', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 # 비디오 캡처 해제
 cap.release()
-cv.destroyAllWindows()
+cv2.destroyAllWindows()
 
 # 각도 데이터를 DataFrame으로 변환
 df = pd.DataFrame(angles_list)
 
 # csv 파일로 저장
-df.to_csv(f'hand_data/hand_angles_{test_data}.csv', index=False)
+df.to_csv(f'training/training_{test_data}.csv', index=False)
