@@ -76,7 +76,7 @@ while cap.isOpened():
                 prev_time = current_time
 
     cv2.imshow('Hand Tracking', frame)
-    if cv.waitKey(1) & 0xFF == ord('q'):
+    if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
 # 비디오 캡처 해제
