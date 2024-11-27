@@ -19,17 +19,13 @@ interval = 0.5  # 1초 간격
 # 각도 데이터를 저장할 리스트
 angles_list = []
 
-test_data = 8
+test_data = 4
 test_case = {
-    0 : "0",
-    1 : "1",
-    2 : "2",
-    3 : "3",
-    4 : "4",
-    5 : "5",
-    6 : "good",
-    7 : "ok",
-    8 : "peace"
+    0:'go', 
+    1:'back', 
+    2:'stop', 
+    3:'side', 
+    
 }
 while cap.isOpened():
     ret, frame = cap.read()

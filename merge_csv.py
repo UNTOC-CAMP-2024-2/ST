@@ -31,5 +31,6 @@ def merge_test_csv():
 
     print("CSV 파일들이 성공적으로 합쳐졌습니다.")
 
-# merge_main_csv()
-merge_test_csv()
+merge_main_csv()
+# merge_test_csv()
+# 

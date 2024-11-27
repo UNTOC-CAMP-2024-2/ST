@@ -1,18 +1,17 @@
 import cv2 
 import mediapipe as mp 
 import numpy as np
+###################
+from control_arduino import send_command
+###################
+
 
 max_num_hands = 1 # 손 인식 개수
 gesture = { 
-    0:'0', 
-    1:'1', 
-    2:'2', 
-    3:'3', 
-    4:'4', 
-    5:'5',
-    6:"good",
-    7:"ok",
-    8:"peace"
+    0:'go', 
+    1:'back', 
+    2:'stop', 
+    3:'side'
     }
 
 # MediaPipe hands model
@@ -74,7 +73,7 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
 
             if idx in gesture.keys(): 
                 cv2.putText(img, text=gesture[idx].upper(), org=(int(res.landmark[0].x * img.shape[1]), int(res.landmark[0].y * img.shape[0] + 20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255), thickness=2)
-
+                send_command(str(idx))
             mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS) # 손에 랜드마크를 그려줌 
 
     cv2.imshow('Game', img)
