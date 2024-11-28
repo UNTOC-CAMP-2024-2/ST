@@ -2,7 +2,7 @@ import cv2
 import mediapipe as mp 
 import numpy as np
 ###################
-from control_arduino import send_command
+# from control_arduino import send_command
 ###################
 
 
@@ -11,7 +11,8 @@ gesture = {
     0:'go', 
     1:'back', 
     2:'stop', 
-    3:'side'
+    3:'side',
+    4:'backLight'
     }
 
 # MediaPipe hands model
@@ -32,9 +33,15 @@ knn = cv2.ml.KNearest_create() # knn(k-최근접 알고리즘)
 knn.train(angle, cv2.ml.ROW_SAMPLE, label) # 학습
 
 cap = cv2.VideoCapture(0) 
-
+motion_res = {
+    'res':[],
+    'cnt':0
+}
 while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
     ret, img = cap.read()
+    # left & right를 위한 초기화
+    gesture[3] = 'side'
+    gesture[4] = "backLight"
     if not ret:
         continue    
 
@@ -49,6 +56,7 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
     if result.multi_hand_landmarks is not None: 
         for res in result.multi_hand_landmarks: 
             joint = np.zeros((21, 3)) 
+            # print() 
             for j, lm in enumerate(res.landmark):
                 joint[j] = [lm.x, lm.y, lm.z] # 각 joint마다 x,y,z 좌표 저장
 
@@ -70,10 +78,32 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
             ret, results, neighbours, dist = knn.findNearest(data, 3) # k가 3일 때 값을 구한다
 
             idx = int(results[0][0]) 
-
-            if idx in gesture.keys(): 
-                cv2.putText(img, text=gesture[idx].upper(), org=(int(res.landmark[0].x * img.shape[1]), int(res.landmark[0].y * img.shape[0] + 20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255), thickness=2)
-                send_command(str(idx))
+            if idx in gesture.keys():
+                # 동일 모션 감지 여부 확인
+                if len(motion_res["res"]) > 0 and motion_res["res"][-1] == idx:
+                    motion_res["cnt"] += 1
+                else:
+                    motion_res["cnt"] = 1  # 새로운 모션이면 카운터 초기화
+                
+                motion_res["res"].append(idx)
+                
+                if motion_res["cnt"] > 5:
+                    # left & right
+                    if gesture[idx] == "side" and res.landmark[4].x > res.landmark[8].x:
+                        gesture[idx] = "left"
+                    elif gesture[idx] == "side" and res.landmark[4].x < res.landmark[8].x:
+                        gesture[idx] = "right"
+                        
+                    if gesture[idx] == "backLight" and res.landmark[17].x > res.landmark[4].x:
+                        print("left")
+                        gesture[idx] = "leftLight"
+                    elif gesture[idx] == "backLight" and res.landmark[17].x < res.landmark[4].x:
+                        print("right")
+                        gesture[idx] = "rightLight"
+                        
+                    motion_res["cnt"] = 0 
+                    cv2.putText(img, text=gesture[idx].upper(), org=(int(res.landmark[0].x * img.shape[1]), int(res.landmark[0].y * img.shape[0] + 20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255), thickness=2)
+                # send_command(str(idx))
             mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS) # 손에 랜드마크를 그려줌 
 
     cv2.imshow('Game', img)
