@@ -6,7 +6,16 @@ import numpy as np
 ###################
 
 
-max_num_hands = 1 # 손 인식 개수
+"""
+1. 주행
+- 왼손 : 직진 or 후진 or 정지 결정 (한번 하면 상태 유지)
+- 오른손 : 죄/우 회전 결정
+
+2. 라이트
+- 왼손 : 좌측 깜빡이, 우측 깜빡이
+"""
+
+max_num_hands = 2 # 손 인식 개수
 gesture = { 
     0:'go', 
     1:'back', 
@@ -33,6 +42,13 @@ knn = cv2.ml.KNearest_create() # knn(k-최근접 알고리즘)
 knn.train(angle, cv2.ml.ROW_SAMPLE, label) # 학습
 
 cap = cv2.VideoCapture(0) 
+
+
+# 상태 변수 초기화
+left_hand_state = "stop"  # 왼손의 상태: "go", "back", "stop" 중 하나
+left_hand_Light = None
+right_hand_action = None  # 오른손의 동작: "left", "right", None 중 하나
+
 motion_res = {
     'res':[],
     'cnt':0
@@ -54,9 +70,12 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
 
     # 각도를 인식하고 제스처를 인식하는 부분 
     if result.multi_hand_landmarks is not None: 
-        for res in result.multi_hand_landmarks: 
+        # 양손 모두 체크 
+        for hand_idx, res in enumerate(result.multi_hand_landmarks):
+            hand_label = result.multi_handedness[hand_idx].classification[0].label  # "Left" 또는 "Right"
+            
             joint = np.zeros((21, 3)) 
-            # print() 
+
             for j, lm in enumerate(res.landmark):
                 joint[j] = [lm.x, lm.y, lm.z] # 각 joint마다 x,y,z 좌표 저장
 
@@ -77,34 +96,77 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
             data = np.array([angle], dtype=np.float32)
             ret, results, neighbours, dist = knn.findNearest(data, 3) # k가 3일 때 값을 구한다
 
-            idx = int(results[0][0]) 
+            idx = int(results[0][0]) # 0, 1, 2, 3, 4
+            
+            # 모션 감지 여부
             if idx in gesture.keys():
                 # 동일 모션 감지 여부 확인
                 if len(motion_res["res"]) > 0 and motion_res["res"][-1] == idx:
                     motion_res["cnt"] += 1
+
                 else:
-                    motion_res["cnt"] = 1  # 새로운 모션이면 카운터 초기화
+                    # 새로운 모션이면 카운터 초기화
+                    motion_res["cnt"] = 1  
+                    
+                motion_res["res"].append(idx) # 모션 추가
                 
-                motion_res["res"].append(idx)
-                
+                # 동일 모션이 5번 초과이면 -> 동작 인식
                 if motion_res["cnt"] > 5:
-                    # left & right
-                    if gesture[idx] == "side" and res.landmark[4].x > res.landmark[8].x:
-                        gesture[idx] = "left"
-                    elif gesture[idx] == "side" and res.landmark[4].x < res.landmark[8].x:
-                        gesture[idx] = "right"
+                    motion_res["res"] = [] # motion_res["res"] 초기화 
+                    
+                    # 왼손
+                    if hand_label == "Left":
+                        if gesture[idx] in ["go", "back", "stop"]:
+                            left_hand_state = gesture[idx]  # 왼손 상태 저장
+                            
                         
-                    if gesture[idx] == "backLight" and res.landmark[17].x > res.landmark[4].x:
-                        print("left")
-                        gesture[idx] = "leftLight"
-                    elif gesture[idx] == "backLight" and res.landmark[17].x < res.landmark[4].x:
-                        print("right")
-                        gesture[idx] = "rightLight"
+                        # 깜빡이
                         
+                        # elif gesture[idx] == "backLight":
+                        #     if res.landmark[17].x > res.landmark[4].x:
+                        #         print("Left BackLight")
+                        #     else:
+                        #         print("Right BackLight")
+                        
+                                
+                    # 오른손
+                    elif hand_label == "Right":  
+                        if gesture[idx] == "side":  # 좌/우 방향 결정
+                            if res.landmark[4].x > res.landmark[8].x:
+                                gesture[idx] = "left"
+                                right_hand_action = "left"
+                            elif res.landmark[4].x < res.landmark[8].x:
+                                gesture[idx] = "right"
+                                right_hand_action = "right"
+                                
+                                
+                    # 현재 상태를 바탕으로 행동 결정
+                    if left_hand_state == "go":
+                        if right_hand_action == "left":
+                            print("전진 + 좌회전")
+                        elif right_hand_action == "right":
+                            print("전진 + 우회전")
+                        else:
+                            print("전진 직진")
+                           
+                    elif left_hand_state == "back":
+                        if right_hand_action == "left":
+                            print("후진 + 좌회전")
+                        elif right_hand_action == "right":
+                            print("후진 + 우회전")
+                        else:
+                            print("후진 직진")
+                    elif left_hand_state == "stop":
+                        print("정지")
+                                        
+                        
+                    right_hand_action = None
                     motion_res["cnt"] = 0 
+                    
                     cv2.putText(img, text=gesture[idx].upper(), org=(int(res.landmark[0].x * img.shape[1]), int(res.landmark[0].y * img.shape[0] + 20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255), thickness=2)
                 # send_command(str(idx))
             mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS) # 손에 랜드마크를 그려줌 
+        
 
     cv2.imshow('Game', img)
     if cv2.waitKey(1) == ord('q'):
