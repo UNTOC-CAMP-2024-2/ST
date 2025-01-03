@@ -15,13 +15,40 @@ import numpy as np
 - 왼손 : 좌측 깜빡이, 우측 깜빡이
 """
 
+
+"""
+send message
+
+100 전진 
+101 전진 + 우회전
+102 전진 + 좌회전
+
+200 후진
+201 후진 + 우회전
+202 후진 + 좌회전
+
+300 정지
+
+400 비상깜빡이
+401 헤드라이트 On
+402 라이트 Off
+
+500 클락션
+
+"""
+
+
+
+
+
 max_num_hands = 2 # 손 인식 개수
 gesture = { 
     0:'go', 
     1:'back', 
     2:'stop', 
     3:'side',
-    4:'backLight'
+    4:'head_light_on',
+    5:'light_off'
     }
 
 # MediaPipe hands model
@@ -56,8 +83,8 @@ motion_res = {
 while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
     ret, img = cap.read()
     # left & right를 위한 초기화
+    
     gesture[3] = 'side'
-    gesture[4] = "backLight"
     if not ret:
         continue    
 
@@ -118,17 +145,7 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
                     if hand_label == "Left":
                         if gesture[idx] in ["go", "back", "stop"]:
                             left_hand_state = gesture[idx]  # 왼손 상태 저장
-                            
-                        
-                        # 깜빡이
-                        
-                        # elif gesture[idx] == "backLight":
-                        #     if res.landmark[17].x > res.landmark[4].x:
-                        #         print("Left BackLight")
-                        #     else:
-                        #         print("Right BackLight")
-                        
-                                
+                           
                     # 오른손
                     elif hand_label == "Right":  
                         if gesture[idx] == "side":  # 좌/우 방향 결정
@@ -138,33 +155,88 @@ while cap.isOpened(): # 웹캠에서 한 프레임씩 이미지를 읽어옴
                             elif res.landmark[4].x < res.landmark[8].x:
                                 gesture[idx] = "right"
                                 right_hand_action = "right"
-                                
+                        elif gesture[idx] == "go": # 클락션
+                            right_hand_action = "honk"
+                        
+                        elif gesture[idx] == "back":
+                            right_hand_action = "emergency_ligth"
+                            
+                        elif gesture[idx] == "head_light_on":
+                            right_hand_action = "head_light_on"
+                        elif gesture[idx] == "light_off":
+                            right_hand_action = "light_off"
+
+
                                 
                     # 현재 상태를 바탕으로 행동 결정
                     if left_hand_state == "go":
                         if right_hand_action == "left":
-                            print("전진 + 좌회전")
+                            # send_command(102) # go + left
+                            print(102)
                         elif right_hand_action == "right":
-                            print("전진 + 우회전")
+                            # send_command(101) # go + right
+                            print(101)
+                        elif right_hand_action == "emergency_ligth":
+                            # send_command(400) # go + emergency_ligth
+                            print(400)
+                        elif right_hand_action == "head_light_on":
+                            # send_command(401) # go + head_light_on
+                            print(401)
+                        elif right_hand_action == "light_off":
+                            # send_command(402) # go + light_off
+                            print(402)
+                        elif right_hand_action == "honk":
+                            # send_command(500) # go + honk
+                            print(500)
                         else:
-                            print("전진 직진")
+                            # send_command(100) # just go
+                            print(100)
                            
                     elif left_hand_state == "back":
                         if right_hand_action == "left":
-                            print("후진 + 좌회전")
+                            # send_command(202)
+                            print(202)
                         elif right_hand_action == "right":
-                            print("후진 + 우회전")
+                            # send_command(201)
+                            print(201)
+                        elif right_hand_action == "emergency_ligth":
+                            # send_command(400) # go + emergency_ligth
+                            print(400)
+                        elif right_hand_action == "head_light_on":
+                            # send_command(401) # go + head_light_on
+                            print(401)
+                        elif right_hand_action == "light_off":
+                            # send_command(402) # go + light_off
+                            print(402)
+                        elif right_hand_action == "honk":
+                            # send_command(500)
+                            print(500)
                         else:
-                            print("후진 직진")
+                            # send_command(200)
+                            print(200)
+                            
                     elif left_hand_state == "stop":
-                        print("정지")
+                        if right_hand_action == "emergency_ligth":
+                            # send_command(400) # go + emergency_ligth
+                            print(400)
+                        elif right_hand_action == "head_light_on":
+                            # send_command(401) # go + head_light_on
+                            print(401)
+                        elif right_hand_action == "light_off":
+                            # send_command(402) # go + light_off
+                            print(402)
+                        elif right_hand_action == "honk":
+                            # send_command(500)
+                            print(500)
+                        else:
+                            # send_command(300)
+                            print(300)
                                         
                         
                     right_hand_action = None
                     motion_res["cnt"] = 0 
                     
                     cv2.putText(img, text=gesture[idx].upper(), org=(int(res.landmark[0].x * img.shape[1]), int(res.landmark[0].y * img.shape[0] + 20)), fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 255, 255), thickness=2)
-                # send_command(str(idx))
             mp_drawing.draw_landmarks(img, res, mp_hands.HAND_CONNECTIONS) # 손에 랜드마크를 그려줌 
         
 

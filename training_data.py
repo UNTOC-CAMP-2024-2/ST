@@ -14,18 +14,20 @@ cap = cv2.VideoCapture(0)  # 웹캠 사용
 
 # 시간 간격 조정을 위한 변수
 prev_time = 0
-interval = 0.1  # 1초 간격
+interval = 0.05  # 1초 간격
 
 # 각도 데이터를 저장할 리스트
 angles_list = []
 
-test_data = 4 # 라벨
+test_data = 5 # 라벨
 test_case = {
     0:'go', 
     1:'back', 
     2:'stop', 
     3:'side',
-    4:"backLight"
+    4:'head_light_on',
+    5:'light_off'
+
 }
 while cap.isOpened():
     ret, frame = cap.read()
