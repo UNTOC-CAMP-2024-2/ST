@@ -14,7 +14,7 @@ cap = cv2.VideoCapture(0)  # 웹캠 사용
 
 # 시간 간격 조정을 위한 변수
 prev_time = 0
-interval = 0.05  # 1초 간격
+interval = 0.05
 
 # 각도 데이터를 저장할 리스트
 angles_list = []
